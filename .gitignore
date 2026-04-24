@@ -1,0 +1,43 @@
+# ── Rust ──────────────────────────────────────────────────────────────────────
+target/
+backend/target/
+**/*.rs.bk
+Cargo.lock.bk
+
+# sqlx offline query cache (commit .sqlx/ if you want offline builds on CI)
+# backend/.sqlx/
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.cache/
+
+# ── Environment files ─────────────────────────────────────────────────────────
+.env
+backend/.env
+frontend/.env
+frontend/.env.production
+frontend/.env.local
+*.env.local
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editors ───────────────────────────────────────────────────────────────────
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.swp
+*.swo
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+*.bak
+*.tmp
