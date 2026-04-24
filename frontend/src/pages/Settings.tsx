@@ -50,6 +50,7 @@ export default function Settings() {
   })
 
   return (
+    <div className="h-full overflow-auto">
     <div className="max-w-2xl mx-auto px-6 py-8 flex flex-col gap-8">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
 
@@ -146,6 +147,7 @@ export default function Settings() {
           </div>
         )}
       </section>
+    </div>
     </div>
   )
 }

@@ -88,6 +88,7 @@ export default function Dashboard() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   return (
+    <div className="h-full overflow-auto">
     <div className="max-w-4xl mx-auto px-6 py-8 flex flex-col gap-8">
       {/* Header */}
       <div>
@@ -149,6 +150,7 @@ export default function Dashboard() {
         </h2>
         <ActivityFeed activities={activities} />
       </section>
+    </div>
     </div>
   )
 }
