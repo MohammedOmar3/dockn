@@ -240,9 +240,10 @@ export default function Whiteboards() {
       </aside>
 
       {/* Canvas */}
-      <div className="flex-1 min-w-0 bg-gray-50 dark:bg-gray-950">
+      <div className="flex-1 min-w-0 h-full bg-gray-50 dark:bg-gray-950">
         {selectedBoard ? (
-          <Excalidraw
+          <div className="w-full h-full">
+            <Excalidraw
             key={selectedBoard.id}
             initialData={{
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -253,6 +254,7 @@ export default function Whiteboards() {
             onChange={handleExcalidrawChange}
             UIOptions={{ canvasActions: { saveToActiveFile: false, loadScene: false, export: { saveFileToDisk: true } } }}
           />
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
             <Layout size={48} className="text-gray-300 dark:text-gray-700" />
