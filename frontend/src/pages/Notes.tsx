@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import clsx from 'clsx'
 import { notebooksApi, notesApi } from '@/api/client'
-import { useUiStore } from '@/store/uiStore'
+import { useUIStore } from '@/store/uiStore'
 import { useToast } from '@/components/ui/Toast'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -233,7 +233,7 @@ function EditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
 // ─── Main Notes page ──────────────────────────────────────────────────────────
 
 export default function Notes() {
-  const { selectedNotebookId, setSelectedNotebookId, selectedNoteId, setSelectedNoteId } = useUiStore()
+  const { selectedNotebookId, setSelectedNotebookId, selectedNoteId, setSelectedNoteId } = useUIStore()
   const { success, error } = useToast()
   const qc = useQueryClient()
 
@@ -333,7 +333,7 @@ export default function Notes() {
 
   const createNote = useMutation({
     mutationFn: () =>
-      notesApi.create({ title: 'Untitled', notebook_id: selectedNotebookId!, content: '' }),
+      notesApi.create({ title: 'Untitled', notebook_id: selectedNotebookId!, content: {} }),
     onSuccess: (note) => {
       qc.invalidateQueries({ queryKey: ['notes', selectedNotebookId] })
       setSelectedNoteId(note.id)
@@ -343,7 +343,7 @@ export default function Notes() {
   })
 
   const updateNote = useMutation({
-    mutationFn: (data: { title?: string; content?: unknown }) =>
+    mutationFn: (data: { title?: string; content?: Record<string, unknown> }) =>
       notesApi.update(selectedNoteId!, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notes', selectedNotebookId] }),
   })

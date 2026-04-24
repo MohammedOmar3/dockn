@@ -35,23 +35,23 @@ export const useUIStore = create<UIState>()(
       searchOpen: false,
       captureOpen: false,
 
-      setSelectedNotebook: (id) =>
+      setSelectedNotebook: (id: string | null) =>
         set({ selectedNotebookId: id, selectedNoteId: null }),
-      setSelectedNote: (id) => set({ selectedNoteId: id }),
-      setSidebarOpen: (open) => set({ sidebarOpen: open }),
+      setSelectedNote: (id: string | null) => set({ selectedNoteId: id }),
+      setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
       toggleTheme: () =>
-        set((s) => {
+        set((s: UIState) => {
           const next = s.theme === 'light' ? 'dark' : 'light'
           document.documentElement.classList.toggle('dark', next === 'dark')
           return { theme: next }
         }),
-      setSearchOpen: (open) => set({ searchOpen: open }),
-      setCaptureOpen: (open) => set({ captureOpen: open }),
+      setSearchOpen: (open: boolean) => set({ searchOpen: open }),
+      setCaptureOpen: (open: boolean) => set({ captureOpen: open }),
     }),
     {
       name: 'dockn-ui',
-      partialState: (s: UIState) => ({ theme: s.theme, sidebarOpen: s.sidebarOpen }),
-    } as Parameters<typeof persist>[1],
+      partialize: (s: UIState) => ({ theme: s.theme, sidebarOpen: s.sidebarOpen }),
+    },
   ),
 )
 

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { authApi } from '@/api/client'
 import { useAuth } from '@/context/AuthContext'

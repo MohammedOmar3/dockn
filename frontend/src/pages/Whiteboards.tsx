@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Excalidraw } from '@excalidraw/excalidraw'
-import { Plus, Folder, Trash2, Edit3, ChevronDown, ChevronRight, Layout } from 'lucide-react'
+import { Plus, Folder, Trash2, ChevronDown, ChevronRight, Layout } from 'lucide-react'
 import clsx from 'clsx'
 import { whiteboardsApi, foldersApi } from '@/api/client'
 import { useToast } from '@/components/ui/Toast'
@@ -108,7 +108,7 @@ export default function Whiteboards() {
       clearTimeout(saveTimer)
       const t = setTimeout(() => {
         whiteboardsApi
-          .update(selectedId, { data: { elements, appState } })
+          .update(selectedId, { raw_data: { elements, appState } })
           .then(() => qc.invalidateQueries({ queryKey: ['whiteboards'] }))
       }, 2000)
       setSaveTimer(t)
@@ -246,9 +246,9 @@ export default function Whiteboards() {
             key={selectedBoard.id}
             initialData={{
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              elements: (selectedBoard.data as any)?.elements ?? [],
+              elements: (selectedBoard.raw_data as any)?.elements ?? [],
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              appState: { ...(selectedBoard.data as any)?.appState ?? {}, collaborators: [] },
+              appState: { ...(selectedBoard.raw_data as any)?.appState ?? {}, collaborators: [] },
             }}
             onChange={handleExcalidrawChange}
             UIOptions={{ canvasActions: { saveToActiveFile: false, loadScene: false, export: { saveFileToDisk: true } } }}

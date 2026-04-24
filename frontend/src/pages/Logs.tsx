@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
-import { ChevronLeft, ChevronRight, BookText, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, BookText } from 'lucide-react'
 import clsx from 'clsx'
 import { logsApi } from '@/api/client'
 import { useToast } from '@/components/ui/Toast'
@@ -50,7 +50,7 @@ function EditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
 export default function Logs() {
   const today = formatDate(new Date())
   const [selectedDate, setSelectedDate] = useState(today)
-  const { success, error } = useToast()
+  const { error } = useToast()
   const qc = useQueryClient()
   const saveTimer = useRef<ReturnType<typeof setTimeout>>()
   const [moodScore, setMoodScore] = useState<number | undefined>()
