@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Excalidraw } from '@excalidraw/excalidraw'
 import { Plus, Folder, Trash2, ChevronDown, ChevronRight, Layout } from 'lucide-react'
@@ -22,7 +22,7 @@ export default function Whiteboards() {
   const [newBoardFolderId, setNewBoardFolderId] = useState<string | undefined>()
   const [deleteWbId, setDeleteWbId] = useState<string | null>(null)
   const [deleteFolderId, setDeleteFolderId] = useState<string | null>(null)
-  const [saveTimer, setSaveTimer] = useState<ReturnType<typeof setTimeout>>()
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout>>()
 
   const { data: folders = [] } = useQuery<WhiteboardFolder[]>({
     queryKey: ['wb-folders'],
@@ -105,15 +105,14 @@ export default function Whiteboards() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (elements: any, appState: any) => {
       if (!selectedId) return
-      clearTimeout(saveTimer)
-      const t = setTimeout(() => {
+      clearTimeout(saveTimerRef.current)
+      saveTimerRef.current = setTimeout(() => {
         whiteboardsApi
           .update(selectedId, { raw_data: { elements, appState } })
           .then(() => qc.invalidateQueries({ queryKey: ['whiteboards'] }))
       }, 2000)
-      setSaveTimer(t)
     },
-    [selectedId, saveTimer, qc],
+    [selectedId, qc],
   )
 
   const BoardItem = ({ board }: { board: Whiteboard }) => (
