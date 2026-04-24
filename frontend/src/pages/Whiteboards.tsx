@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Excalidraw } from '@excalidraw/excalidraw'
 import { Plus, Folder, Trash2, ChevronDown, ChevronRight, Layout } from 'lucide-react'
@@ -23,6 +23,21 @@ export default function Whiteboards() {
   const [deleteWbId, setDeleteWbId] = useState<string | null>(null)
   const [deleteFolderId, setDeleteFolderId] = useState<string | null>(null)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pendingDataRef = useRef<{ id: string; elements: any; appState: any } | null>(null)
+
+  const flushSave = useCallback(() => {
+    if (!pendingDataRef.current) return
+    const { id, elements, appState } = pendingDataRef.current
+    pendingDataRef.current = null
+    clearTimeout(saveTimerRef.current)
+    whiteboardsApi.update(id, { raw_data: { elements, appState } })
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('beforeunload', flushSave)
+    return () => window.removeEventListener('beforeunload', flushSave)
+  }, [flushSave])
 
   const { data: folders = [] } = useQuery<WhiteboardFolder[]>({
     queryKey: ['wb-folders'],
@@ -105,8 +120,10 @@ export default function Whiteboards() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (elements: any, appState: any) => {
       if (!selectedId) return
+      pendingDataRef.current = { id: selectedId, elements, appState }
       clearTimeout(saveTimerRef.current)
       saveTimerRef.current = setTimeout(() => {
+        pendingDataRef.current = null
         whiteboardsApi
           .update(selectedId, { raw_data: { elements, appState } })
           .then(() => qc.invalidateQueries({ queryKey: ['whiteboards'] }))
@@ -123,7 +140,7 @@ export default function Whiteboards() {
           ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400'
           : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800',
       )}
-      onClick={() => setSelectedId(board.id)}
+      onClick={() => { flushSave(); setSelectedId(board.id) }}
     >
       <Layout size={14} className="shrink-0 opacity-60" />
       <span className="flex-1 truncate">{board.title}</span>
