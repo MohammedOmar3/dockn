@@ -57,6 +57,7 @@ export default function Logs() {
 
   const { data: log } = useQuery<DailyLog | null>({
     queryKey: ['log', selectedDate],
+    retry: false,
     queryFn: async () => {
       try {
         return await logsApi.getByDate(selectedDate)
@@ -185,7 +186,7 @@ export default function Logs() {
       ) : (
         <>
           <EditorToolbar editor={editor} />
-          <div className="flex-1 overflow-y-auto">
+          <div key={selectedDate} className="flex-1 overflow-y-auto">
             <div className="max-w-3xl mx-auto px-6 py-6">
               <EditorContent editor={editor} />
             </div>
