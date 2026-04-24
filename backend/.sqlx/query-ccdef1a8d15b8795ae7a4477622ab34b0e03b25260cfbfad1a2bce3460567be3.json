@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO notebooks (user_id, name, color, display_order, is_inbox)\n        VALUES ($1, 'Inbox', '#6366f1', 0, TRUE)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ccdef1a8d15b8795ae7a4477622ab34b0e03b25260cfbfad1a2bce3460567be3"
+}

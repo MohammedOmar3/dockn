@@ -9,4 +9,4 @@ CREATE TABLE activities (
 );
 
 CREATE INDEX idx_activities_user_id ON activities (user_id, timestamp DESC);
-CREATE INDEX idx_activities_date ON activities (user_id, (timestamp::DATE), timestamp DESC);
+CREATE INDEX idx_activities_date ON activities (user_id, timestamp DESC);

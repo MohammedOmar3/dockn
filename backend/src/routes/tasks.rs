@@ -225,7 +225,7 @@ async fn update_task(
             status      = COALESCE($3, status),
             priority    = COALESCE($4, priority),
             due_date    = CASE WHEN $5 = TRUE THEN NULL
-                               WHEN $6 IS NOT NULL THEN $6
+                               WHEN $6::DATE IS NOT NULL THEN $6::DATE
                                ELSE due_date END
         WHERE id = $7 AND user_id = $8
         RETURNING id, user_id, title, description,

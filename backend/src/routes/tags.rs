@@ -45,6 +45,7 @@ async fn create_tag(
     body.validate()
         .map_err(|e| AppError::BadRequest(e.to_string()))?;
 
+    let name_lower = body.name.to_lowercase();
     let tag = sqlx::query_as!(
         Tag,
         r#"
@@ -53,7 +54,7 @@ async fn create_tag(
         RETURNING *
         "#,
         auth.user_id,
-        body.name.to_lowercase().trim(),
+        name_lower.trim(),
         body.color.unwrap_or_else(|| "#6366f1".to_string())
     )
     .fetch_one(&state.pool)

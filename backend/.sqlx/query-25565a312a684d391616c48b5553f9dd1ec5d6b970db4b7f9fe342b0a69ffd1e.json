@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        DELETE FROM task_tags\n        WHERE task_id = $1 AND tag_id = $2\n          AND EXISTS (SELECT 1 FROM tasks WHERE id = $1 AND user_id = $3)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "25565a312a684d391616c48b5553f9dd1ec5d6b970db4b7f9fe342b0a69ffd1e"
+}

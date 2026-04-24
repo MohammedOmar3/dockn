@@ -1,5 +1,8 @@
 -- Change daily_logs.content from TEXT to JSONB so TipTap JSON can be stored natively
 ALTER TABLE daily_logs
+    ALTER COLUMN content DROP DEFAULT;
+
+ALTER TABLE daily_logs
     ALTER COLUMN content TYPE JSONB USING
         CASE
             WHEN content = '' OR content IS NULL THEN '{}'::jsonb

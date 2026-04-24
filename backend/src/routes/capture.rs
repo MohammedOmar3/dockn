@@ -49,7 +49,7 @@ async fn capture(
             r#"
             INSERT INTO tasks (user_id, title, status, priority)
             VALUES ($1, $2, 'todo'::task_status, 'medium'::task_priority)
-            RETURNING id, user_id, title,
+            RETURNING id, user_id, title, description,
                       status AS "status: TaskStatus",
                       priority AS "priority: TaskPriority",
                       due_date, created_at, updated_at

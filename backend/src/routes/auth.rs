@@ -133,6 +133,7 @@ async fn register(
     }
 
     let password_hash = auth_service::hash_password(&body.password)?;
+    let email_lower = body.email.to_lowercase();
 
     let user = sqlx::query_as!(
         User,
@@ -143,7 +144,7 @@ async fn register(
         "#,
         body.first_name.trim(),
         body.last_name.trim(),
-        body.email.to_lowercase().trim(),
+        email_lower.trim(),
         password_hash
     )
     .fetch_one(&state.pool)
@@ -178,10 +179,11 @@ async fn login(
     jar: CookieJar,
     Json(body): Json<LoginDto>,
 ) -> AppResult<impl IntoResponse> {
+    let email_lower = body.email.to_lowercase();
     let user = sqlx::query_as!(
         User,
         "SELECT * FROM users WHERE email = $1 AND is_active = TRUE",
-        body.email.to_lowercase().trim()
+        email_lower.trim()
     )
     .fetch_optional(&state.pool)
     .await?

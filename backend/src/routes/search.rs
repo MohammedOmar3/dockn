@@ -128,9 +128,9 @@ async fn search(
             LogResult,
             r#"
             SELECT id, log_date,
-                   LEFT(content, 150) AS "content_snippet!"
+                   LEFT(content::TEXT, 150) AS "content_snippet!"
             FROM daily_logs
-            WHERE user_id = $1 AND content ILIKE $2
+            WHERE user_id = $1 AND content::TEXT ILIKE $2
             ORDER BY log_date DESC
             LIMIT 10
             "#,

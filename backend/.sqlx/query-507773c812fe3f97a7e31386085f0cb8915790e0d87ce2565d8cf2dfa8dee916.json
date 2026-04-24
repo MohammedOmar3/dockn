@@ -1,0 +1,125 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE tasks\n        SET\n            title       = COALESCE($1, title),\n            description = COALESCE($2, description),\n            status      = COALESCE($3, status),\n            priority    = COALESCE($4, priority),\n            due_date    = CASE WHEN $5 = TRUE THEN NULL\n                               WHEN $6::DATE IS NOT NULL THEN $6::DATE\n                               ELSE due_date END\n        WHERE id = $7 AND user_id = $8\n        RETURNING id, user_id, title, description,\n                  status AS \"status: TaskStatus\",\n                  priority AS \"priority: TaskPriority\",\n                  due_date, created_at, updated_at\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "title",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "status: TaskStatus",
+        "type_info": {
+          "Custom": {
+            "name": "task_status",
+            "kind": {
+              "Enum": [
+                "todo",
+                "in_progress",
+                "done",
+                "cancelled"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "priority: TaskPriority",
+        "type_info": {
+          "Custom": {
+            "name": "task_priority",
+            "kind": {
+              "Enum": [
+                "low",
+                "medium",
+                "high",
+                "urgent"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "due_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        {
+          "Custom": {
+            "name": "task_status",
+            "kind": {
+              "Enum": [
+                "todo",
+                "in_progress",
+                "done",
+                "cancelled"
+              ]
+            }
+          }
+        },
+        {
+          "Custom": {
+            "name": "task_priority",
+            "kind": {
+              "Enum": [
+                "low",
+                "medium",
+                "high",
+                "urgent"
+              ]
+            }
+          }
+        },
+        "Bool",
+        "Date",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "507773c812fe3f97a7e31386085f0cb8915790e0d87ce2565d8cf2dfa8dee916"
+}

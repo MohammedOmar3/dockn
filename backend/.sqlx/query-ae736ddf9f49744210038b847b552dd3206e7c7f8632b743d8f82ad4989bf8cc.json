@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE whiteboards SET folder_id = NULL WHERE folder_id = $1 AND user_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ae736ddf9f49744210038b847b552dd3206e7c7f8632b743d8f82ad4989bf8cc"
+}
