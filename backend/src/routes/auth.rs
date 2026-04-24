@@ -87,7 +87,7 @@ fn make_access_cookie(token: &str, secure: bool) -> Cookie<'static> {
         .path("/")
         .http_only(true)
         .secure(secure)
-        .same_site(SameSite::Lax)
+        .same_site(SameSite::None)
         .max_age(Duration::minutes(15))
         .build()
 }
@@ -97,7 +97,7 @@ fn make_refresh_cookie(token: &str, secure: bool) -> Cookie<'static> {
         .path("/api/auth")
         .http_only(true)
         .secure(secure)
-        .same_site(SameSite::Lax)
+        .same_site(SameSite::None)
         .max_age(Duration::days(30))
         .build()
 }

@@ -68,6 +68,7 @@ async fn main() -> anyhow::Result<()> {
             axum::http::header::CONTENT_TYPE,
             axum::http::header::AUTHORIZATION,
         ])
+        .expose_headers([axum::http::header::SET_COOKIE])
         .allow_credentials(true);
 
     let app = Router::new()
