@@ -4,7 +4,7 @@ import { Search, ArrowRight } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { createPortal } from 'react-dom'
 import { searchApi } from '@/api/client'
-import { useUiStore } from '@/store/uiStore'
+import { useUIStore } from '@/store/uiStore'
 import type { SearchResults } from '@/types'
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -17,7 +17,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function SearchModal() {
-  const { searchOpen, setSearchOpen } = useUiStore()
+  const { searchOpen, setSearchOpen } = useUIStore()
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
   const debouncedQuery = useDebounce(query, 300)
@@ -52,7 +52,7 @@ export function SearchModal() {
   if (!searchOpen) return null
 
   const hasResults =
-    data && (data.tasks.length > 0 || data.notes.length > 0 || data.daily_logs.length > 0)
+    data && (data.tasks.length > 0 || data.notes.length > 0 || data.logs.length > 0)
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] p-4">
@@ -124,12 +124,12 @@ export function SearchModal() {
                 ))}
               </section>
             )}
-            {data && data.daily_logs.length > 0 && (
+            {data && data.logs.length > 0 && (
               <section className="py-2">
                 <p className="px-4 py-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
                   Logs
                 </p>
-                {data.daily_logs.map((log) => (
+                {data.logs.map((log: { id: string; log_date: string; content_snippet: string }) => (
                   <button
                     key={log.id}
                     onClick={() => {

@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import {
   BookOpen,
   CheckSquare,
@@ -10,7 +10,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import clsx from 'clsx'
-import { useUiStore } from '@/store/uiStore'
+import { useUIStore } from '@/store/uiStore'
 
 const NAV = [
   { to: '/', icon: Layout, label: 'Dashboard' },
@@ -21,7 +21,7 @@ const NAV = [
 ]
 
 export function AppSidebar() {
-  const { sidebarOpen, setSidebarOpen } = useUiStore()
+  const { sidebarOpen, setSidebarOpen } = useUIStore()
 
   return (
     <aside

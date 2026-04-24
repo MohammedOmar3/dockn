@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { CheckSquare, BookOpen, BookText, Layout, TrendingUp, AlertCircle } from 'lucide-react'
+import { CheckSquare, BookOpen, BookText, TrendingUp, AlertCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { tasksApi, notebooksApi, logsApi, activityApi } from '@/api/client'
+import { tasksApi, notebooksApi, activityApi } from '@/api/client'
 import { useAuth } from '@/context/AuthContext'
 import type { Task, Activity } from '@/types'
 

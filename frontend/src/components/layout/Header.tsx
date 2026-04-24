@@ -1,12 +1,11 @@
 import { Search, Zap, Sun, Moon, User, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
-import { useUiStore } from '@/store/uiStore'
+import { useUIStore } from '@/store/uiStore'
 import { useAuth } from '@/context/AuthContext'
-import clsx from 'clsx'
 
 export function Header() {
-  const { setSearchOpen, setCaptureOpen, theme, toggleTheme } = useUiStore()
+  const { setSearchOpen, setCaptureOpen, theme, toggleTheme } = useUIStore()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [userMenuOpen, setUserMenuOpen] = useState(false)

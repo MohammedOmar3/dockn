@@ -233,7 +233,7 @@ function EditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
 // ─── Main Notes page ──────────────────────────────────────────────────────────
 
 export default function Notes() {
-  const { selectedNotebookId, setSelectedNotebookId, selectedNoteId, setSelectedNoteId } = useUIStore()
+  const { selectedNotebookId, setSelectedNotebook: setSelectedNotebookId, selectedNoteId, setSelectedNote: setSelectedNoteId } = useUIStore()
   const { success, error } = useToast()
   const qc = useQueryClient()
 

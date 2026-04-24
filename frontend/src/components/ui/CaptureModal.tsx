@@ -3,12 +3,12 @@ import { Zap } from 'lucide-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createPortal } from 'react-dom'
 import { captureApi } from '@/api/client'
-import { useUiStore } from '@/store/uiStore'
+import { useUIStore } from '@/store/uiStore'
 import { useToast } from '@/components/ui/Toast'
 import { Button } from '@/components/ui/Button'
 
 export function CaptureModal() {
-  const { captureOpen, setCaptureOpen } = useUiStore()
+  const { captureOpen, setCaptureOpen } = useUIStore()
   const [text, setText] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { success, error } = useToast()
