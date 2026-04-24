@@ -5,6 +5,10 @@ RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/li
 
 WORKDIR /app
 
+# sqlx compile-time query checking requires either a live DB or an offline cache.
+# We use the offline cache (.sqlx/ directory committed to the repo).
+ENV SQLX_OFFLINE=true
+
 # Cache dependencies by building empty project first
 COPY Cargo.toml Cargo.lock* ./
 RUN mkdir src && echo "fn main() {}" > src/main.rs
