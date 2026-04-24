@@ -51,8 +51,7 @@ async function request<T>(
       await refreshPromise
       return request<T>(path, options, false)
     } catch {
-      // Refresh failed — redirect to login
-      window.location.href = '/login'
+      // Refresh failed — throw so AuthContext sets user to null and router redirects
       throw new ApiError(401, 'Session expired')
     }
   }
