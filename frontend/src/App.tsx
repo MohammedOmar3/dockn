@@ -12,6 +12,7 @@ import Tasks from '@/pages/Tasks'
 import Logs from '@/pages/Logs'
 import Whiteboards from '@/pages/Whiteboards'
 import Settings from '@/pages/Settings'
+import Chat from '@/pages/Chat'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -100,6 +101,17 @@ function AppRoutes() {
           <AuthGuard>
             <AppLayout>
               <Settings />
+            </AppLayout>
+          </AuthGuard>
+        }
+      />
+
+      <Route
+        path="/chat"
+        element={
+          <AuthGuard>
+            <AppLayout>
+              <Chat />
             </AppLayout>
           </AuthGuard>
         }

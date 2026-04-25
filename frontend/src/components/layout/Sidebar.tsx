@@ -8,6 +8,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  MessageSquare,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useUIStore } from '@/store/uiStore'
@@ -18,6 +19,7 @@ const NAV = [
   { to: '/tasks', icon: CheckSquare, label: 'Tasks' },
   { to: '/logs', icon: BookText, label: 'Daily Log' },
   { to: '/whiteboards', icon: Activity, label: 'Whiteboards' },
+  { to: '/chat', icon: MessageSquare, label: 'AI Chat' },
 ]
 
 export function AppSidebar() {
