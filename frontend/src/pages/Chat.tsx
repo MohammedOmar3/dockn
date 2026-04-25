@@ -175,9 +175,37 @@ function Composer() {
   )
 }
 
+function ChatErrorBanner({
+  message,
+  onDismiss,
+}: {
+  message: string
+  onDismiss: () => void
+}) {
+  return (
+    <div className="mx-4 mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
+      <div className="flex items-start justify-between gap-3">
+        <span className="leading-relaxed">{message}</span>
+        <button
+          onClick={onDismiss}
+          className="text-xs font-medium text-red-700 hover:text-red-900 dark:text-red-300 dark:hover:text-red-100"
+        >
+          Dismiss
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Thread Area ─────────────────────────────────────────────────────────
 
-function ChatThread() {
+function ChatThread({
+  errorMessage,
+  onDismissError,
+}: {
+  errorMessage: string | null
+  onDismissError: () => void
+}) {
   return (
     <ThreadPrimitive.Root className="flex flex-col flex-1 min-h-0">
       {/* Empty state */}
@@ -192,6 +220,8 @@ function ChatThread() {
           </div>
         </div>
       </ThreadPrimitive.Empty>
+
+      {errorMessage ? <ChatErrorBanner message={errorMessage} onDismiss={onDismissError} /> : null}
 
       {/* Messages */}
       <ThreadPrimitive.Viewport className="flex-1 overflow-y-auto py-4 flex flex-col gap-1">
@@ -226,12 +256,21 @@ function ChatThread() {
 export default function Chat() {
   const [selectedModel, setSelectedModel] = useState('openai/gpt-4o-mini')
   const [webSearch, setWebSearch] = useState(false)
+  const [chatError, setChatError] = useState<string | null>(null)
 
   const runtime = useChatRuntime({
     transport: new AssistantChatTransport({
       api: '/api/chat',
       body: { model: selectedModel, webSearch },
     }),
+    onError: (error) => {
+      setChatError(error.message || 'Chat request failed')
+    },
+    onFinish: ({ isError }) => {
+      if (!isError) {
+        setChatError(null)
+      }
+    },
   })
 
   return (
@@ -244,7 +283,7 @@ export default function Chat() {
           onWebSearchChange={setWebSearch}
         />
         <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-gray-950">
-          <ChatThread />
+          <ChatThread errorMessage={chatError} onDismissError={() => setChatError(null)} />
         </div>
       </div>
     </AssistantRuntimeProvider>

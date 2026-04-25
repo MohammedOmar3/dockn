@@ -37,9 +37,11 @@ export default async function handler(req: Request): Promise<Response> {
       });
     }
 
+    const modelMessages = await convertToModelMessages(messages);
+
     const result = streamText({
       model: openrouter(model),
-      messages: convertToModelMessages(messages),
+      messages: modelMessages,
     });
 
     return result.toTextStreamResponse();
