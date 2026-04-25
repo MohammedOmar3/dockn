@@ -44,7 +44,7 @@ export default async function handler(req: Request): Promise<Response> {
       messages: modelMessages,
     });
 
-    return result.toTextStreamResponse();
+    return result.toUIMessageStreamResponse();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return new Response(
