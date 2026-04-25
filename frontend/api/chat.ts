@@ -40,7 +40,7 @@ export default async function handler(req: Request): Promise<Response> {
     const modelMessages = await convertToModelMessages(messages);
 
     const result = streamText({
-      model: openrouter(model),
+      model: openrouter.chat(model),
       messages: modelMessages,
     });
 
