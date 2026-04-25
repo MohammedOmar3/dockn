@@ -13,11 +13,13 @@ import { MessageSquare, Plus, Trash2, Globe, Bot, User } from 'lucide-react'
 import clsx from 'clsx'
 
 const MODELS = [
-  { id: 'gpt-4o-mini', label: 'GPT-4o mini' },
-  { id: 'gpt-4o', label: 'GPT-4o' },
-  { id: 'gpt-4.1', label: 'GPT-4.1' },
-  { id: 'claude-sonnet-4-5', label: 'Claude Sonnet' },
-  { id: 'claude-opus-4', label: 'Claude Opus' },
+  { id: 'openai/gpt-4o-mini', label: 'GPT-4o mini' },
+  { id: 'openai/gpt-4o', label: 'GPT-4o' },
+  { id: 'openai/gpt-4.1', label: 'GPT-4.1' },
+  { id: 'anthropic/claude-sonnet-4-5', label: 'Claude Sonnet' },
+  { id: 'anthropic/claude-opus-4', label: 'Claude Opus' },
+  { id: 'meta-llama/llama-4-maverick', label: 'Llama 4 Maverick' },
+  { id: 'google/gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
 ]
 
 // ─── Thread List Item ────────────────────────────────────────────────────────
@@ -222,7 +224,7 @@ function ChatThread() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Chat() {
-  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini')
+  const [selectedModel, setSelectedModel] = useState('openai/gpt-4o-mini')
   const [webSearch, setWebSearch] = useState(false)
 
   const runtime = useChatRuntime({
