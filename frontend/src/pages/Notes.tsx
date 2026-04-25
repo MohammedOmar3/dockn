@@ -9,6 +9,9 @@ import {
   Trash2,
   Edit3,
   BookOpen,
+  ChevronDown,
+  ChevronRight,
+  FileText,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { notebooksApi, notesApi } from '@/api/client'
@@ -19,116 +22,9 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import type { Notebook, Note } from '@/types'
 
-// ─── Notebook sidebar ────────────────────────────────────────────────────────
+// ─── Note tree item ───────────────────────────────────────────────────────────
 
-function NotebookItem({
-  notebook,
-  selected,
-  onSelect,
-  onRename,
-  onDelete,
-}: {
-  notebook: Notebook
-  selected: boolean
-  onSelect: () => void
-  onRename: (name: string) => void
-  onDelete: () => void
-}) {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [renaming, setRenaming] = useState(false)
-  const [name, setName] = useState(notebook.name)
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const h = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
-    }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [])
-
-  if (renaming) {
-    return (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (name.trim()) {
-            onRename(name.trim())
-            setRenaming(false)
-          }
-        }}
-        className="px-2"
-      >
-        <input
-          autoFocus
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Escape' && setRenaming(false)}
-          className="w-full px-2 py-1 text-sm rounded border border-brand-400 outline-none bg-white dark:bg-gray-800 dark:text-gray-100"
-        />
-      </form>
-    )
-  }
-
-  return (
-    <div
-      className={clsx(
-        'group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer text-sm transition-colors',
-        selected
-          ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400'
-          : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800',
-      )}
-      onClick={onSelect}
-    >
-      <BookOpen size={14} className="shrink-0 opacity-60" />
-      <span className="flex-1 truncate font-medium">{notebook.name}</span>
-      {notebook.is_inbox && (
-        <span className="text-[10px] uppercase tracking-wide text-gray-400">inbox</span>
-      )}
-      {!notebook.is_inbox && (
-        <div ref={menuRef} className="relative">
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setMenuOpen((v) => !v)
-            }}
-            className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-opacity"
-          >
-            <MoreHorizontal size={14} />
-          </button>
-          {menuOpen && (
-            <div className="absolute left-0 top-full mt-1 w-36 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setRenaming(true)
-                  setMenuOpen(false)
-                }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-              >
-                <Edit3 size={12} /> Rename
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setMenuOpen(false)
-                  onDelete()
-                }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-              >
-                <Trash2 size={12} /> Delete
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Note list panel ──────────────────────────────────────────────────────────
-
-function NoteListItem({
+function NoteTreeItem({
   note,
   selected,
   onSelect,
@@ -139,8 +35,61 @@ function NoteListItem({
   onSelect: () => void
   onDelete: () => void
 }) {
+  return (
+    <div
+      className={clsx(
+        'group flex items-center gap-1.5 pl-7 pr-2 py-1.5 rounded-md cursor-pointer transition-colors',
+        selected
+          ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400'
+          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800',
+      )}
+      onClick={onSelect}
+    >
+      <FileText size={12} className="shrink-0 opacity-50" />
+      <span className="flex-1 truncate text-sm">{note.title}</span>
+      <button
+        onClick={(e) => { e.stopPropagation(); onDelete() }}
+        className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-400 hover:text-red-500 transition-opacity shrink-0"
+      >
+        <Trash2 size={12} />
+      </button>
+    </div>
+  )
+}
+
+// ─── Notebook section (tree) ──────────────────────────────────────────────────
+
+function NotebookSection({
+  notebook,
+  expanded,
+  onToggle,
+  selectedNoteId,
+  onSelectNote,
+  onDeleteNote,
+  onAddNote,
+  onRename,
+  onDelete,
+}: {
+  notebook: Notebook
+  expanded: boolean
+  onToggle: () => void
+  selectedNoteId: string | null
+  onSelectNote: (note: Note, notebookId: string) => void
+  onDeleteNote: (noteId: string) => void
+  onAddNote: (notebookId: string) => void
+  onRename: (name: string) => void
+  onDelete: () => void
+}) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [renaming, setRenaming] = useState(false)
+  const [name, setName] = useState(notebook.name)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  const { data: notes = [] } = useQuery<Note[]>({
+    queryKey: ['notes', notebook.id],
+    queryFn: () => notesApi.list(notebook.id),
+    enabled: expanded,
+  })
 
   useEffect(() => {
     const h = (e: MouseEvent) => {
@@ -150,50 +99,91 @@ function NoteListItem({
     return () => document.removeEventListener('mousedown', h)
   }, [])
 
-  const preview = typeof note.content === 'string' ? note.content : ''
-
   return (
-    <div
-      className={clsx(
-        'group flex flex-col gap-1 px-4 py-3 cursor-pointer border-b border-gray-100 dark:border-gray-800 transition-colors',
-        selected
-          ? 'bg-brand-50 dark:bg-brand-900/20'
-          : 'hover:bg-gray-50 dark:hover:bg-gray-800/50',
-      )}
-      onClick={onSelect}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{note.title}</p>
-        <div ref={menuRef} className="relative shrink-0">
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setMenuOpen((v) => !v)
-            }}
-            className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-          >
-            <MoreHorizontal size={14} />
+    <div className="mb-0.5">
+      {renaming ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (name.trim()) { onRename(name.trim()); setRenaming(false) }
+          }}
+          className="px-2 py-1"
+        >
+          <input
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Escape' && setRenaming(false)}
+            className="w-full px-2 py-1 text-xs rounded border border-brand-400 outline-none bg-white dark:bg-gray-800 dark:text-gray-100"
+          />
+        </form>
+      ) : (
+        <div className="group flex items-center gap-1 px-2 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 select-none">
+          <button onClick={onToggle} className="flex items-center gap-1.5 flex-1 min-w-0 cursor-pointer">
+            {expanded
+              ? <ChevronDown size={13} className="shrink-0 text-gray-400" />
+              : <ChevronRight size={13} className="shrink-0 text-gray-400" />}
+            <BookOpen size={13} className="shrink-0 text-gray-500 dark:text-gray-400" />
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{notebook.name}</span>
+            {notebook.is_inbox && (
+              <span className="text-[10px] uppercase tracking-wide text-gray-400 ml-1">inbox</span>
+            )}
           </button>
-          {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setMenuOpen(false)
-                  onDelete()
-                }}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-              >
-                <Trash2 size={12} /> Delete
-              </button>
-            </div>
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={(e) => { e.stopPropagation(); onAddNote(notebook.id) }}
+              className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500"
+              title="New note"
+            >
+              <Plus size={12} />
+            </button>
+            {!notebook.is_inbox && (
+              <div ref={menuRef} className="relative">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v) }}
+                  className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500"
+                >
+                  <MoreHorizontal size={12} />
+                </button>
+                {menuOpen && (
+                  <div className="absolute left-0 top-full mt-1 w-36 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setRenaming(true); setMenuOpen(false) }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    >
+                      <Edit3 size={12} /> Rename
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDelete() }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    >
+                      <Trash2 size={12} /> Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {expanded && (
+        <div className="mt-0.5 mb-1">
+          {notes.length === 0 ? (
+            <p className="pl-8 py-1 text-xs text-gray-400 italic">No notes</p>
+          ) : (
+            notes.map((note) => (
+              <NoteTreeItem
+                key={note.id}
+                note={note}
+                selected={note.id === selectedNoteId}
+                onSelect={() => onSelectNote(note, notebook.id)}
+                onDelete={() => onDeleteNote(note.id)}
+              />
+            ))
           )}
         </div>
-      </div>
-      <p className="text-xs text-gray-400 truncate">{preview || 'No content'}</p>
-      <p className="text-[10px] text-gray-400">
-        {new Date(note.updated_at).toLocaleDateString()}
-      </p>
+      )}
     </div>
   )
 }
@@ -237,6 +227,7 @@ export default function Notes() {
   const { success, error } = useToast()
   const qc = useQueryClient()
 
+  const [expandedNotebooks, setExpandedNotebooks] = useState<Set<string>>(new Set())
   const [newNotebookOpen, setNewNotebookOpen] = useState(false)
   const [newNotebookName, setNewNotebookName] = useState('')
   const [deleteNotebookId, setDeleteNotebookId] = useState<string | null>(null)
@@ -250,21 +241,26 @@ export default function Notes() {
     queryFn: notebooksApi.list,
   })
 
-  // Auto-select first notebook
+  // Expand all notebooks on first load and auto-select first
   useEffect(() => {
-    if (!selectedNotebookId && notebooks.length > 0) {
-      setSelectedNotebookId(notebooks[0].id)
+    if (notebooks.length > 0) {
+      setExpandedNotebooks((prev) =>
+        prev.size === 0 ? new Set(notebooks.map((nb) => nb.id)) : prev,
+      )
+      if (!selectedNotebookId) {
+        setSelectedNotebookId(notebooks[0].id)
+      }
     }
   }, [notebooks, selectedNotebookId, setSelectedNotebookId])
 
-  // ── Notes query ──
+  // ── Notes query for selected notebook (drives the editor) ──
   const { data: notes = [] } = useQuery<Note[]>({
     queryKey: ['notes', selectedNotebookId],
     queryFn: () => notesApi.list(selectedNotebookId!),
     enabled: !!selectedNotebookId,
   })
 
-  // Auto-select first note
+  // Auto-select first note when notebook changes
   useEffect(() => {
     if (notes.length > 0 && !notes.find((n) => n.id === selectedNoteId)) {
       setSelectedNoteId(notes[0].id)
@@ -295,11 +291,19 @@ export default function Notes() {
   // Sync editor when note changes
   useEffect(() => {
     if (editor && selectedNote) {
-      const content = selectedNote.content ?? ''
-      editor.commands.setContent(content)
+      editor.commands.setContent(selectedNote.content ?? '')
       setNoteTitleEdit(selectedNote.title)
     }
   }, [selectedNote?.id])
+
+  const toggleNotebook = (id: string) => {
+    setExpandedNotebooks((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   // ── Mutations ──
   const createNotebook = useMutation({
@@ -307,6 +311,7 @@ export default function Notes() {
     onSuccess: (nb) => {
       qc.invalidateQueries({ queryKey: ['notebooks'] })
       setSelectedNotebookId(nb.id)
+      setExpandedNotebooks((prev) => new Set([...prev, nb.id]))
       setNewNotebookOpen(false)
       setNewNotebookName('')
       success('Notebook created')
@@ -332,10 +337,11 @@ export default function Notes() {
   })
 
   const createNote = useMutation({
-    mutationFn: () =>
-      notesApi.create({ title: 'Untitled', notebook_id: selectedNotebookId!, content: {} }),
-    onSuccess: (note) => {
-      qc.invalidateQueries({ queryKey: ['notes', selectedNotebookId] })
+    mutationFn: (notebookId: string) =>
+      notesApi.create({ title: 'Untitled', notebook_id: notebookId, content: {} }),
+    onSuccess: (note, notebookId) => {
+      qc.invalidateQueries({ queryKey: ['notes', notebookId] })
+      setSelectedNotebookId(notebookId)
       setSelectedNoteId(note.id)
       success('Note created')
     },
@@ -351,9 +357,9 @@ export default function Notes() {
   const deleteNote = useMutation({
     mutationFn: (id: string) => notesApi.delete(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['notes', selectedNotebookId] })
+      qc.invalidateQueries({ queryKey: ['notes'] })
       setDeleteNoteId(null)
-      setSelectedNoteId(null)
+      if (deleteNoteId === selectedNoteId) setSelectedNoteId(null)
       success('Note deleted')
     },
     onError: () => error('Failed to delete note'),
@@ -367,12 +373,10 @@ export default function Notes() {
 
   return (
     <div className="flex h-full">
-      {/* Notebook sidebar */}
-      <aside className="w-52 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
+      {/* Tree sidebar */}
+      <aside className="w-56 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
         <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200 dark:border-gray-800">
-          <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-            Notebooks
-          </span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Notes</span>
           <button
             onClick={() => setNewNotebookOpen(true)}
             className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
@@ -381,54 +385,24 @@ export default function Notes() {
             <Plus size={14} />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto py-2 px-2 flex flex-col gap-0.5">
+        <div className="flex-1 overflow-y-auto py-2 px-2">
           {notebooks.map((nb) => (
-            <NotebookItem
+            <NotebookSection
               key={nb.id}
               notebook={nb}
-              selected={nb.id === selectedNotebookId}
-              onSelect={() => setSelectedNotebookId(nb.id)}
+              expanded={expandedNotebooks.has(nb.id)}
+              onToggle={() => toggleNotebook(nb.id)}
+              selectedNoteId={selectedNoteId}
+              onSelectNote={(note, notebookId) => {
+                setSelectedNoteId(note.id)
+                setSelectedNotebookId(notebookId)
+              }}
+              onDeleteNote={(noteId) => setDeleteNoteId(noteId)}
+              onAddNote={(notebookId) => createNote.mutate(notebookId)}
               onRename={(name) => renameNotebook.mutate({ id: nb.id, name })}
               onDelete={() => setDeleteNotebookId(nb.id)}
             />
           ))}
-        </div>
-      </aside>
-
-      {/* Note list */}
-      <aside className="w-64 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-          <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 truncate">
-            {notebooks.find((n) => n.id === selectedNotebookId)?.name ?? 'Notes'}
-          </span>
-          <button
-            onClick={() => createNote.mutate()}
-            disabled={!selectedNotebookId}
-            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 disabled:opacity-40"
-            title="New note"
-          >
-            <Plus size={14} />
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {notes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3 p-4 text-center">
-              <p className="text-sm text-gray-400">No notes yet</p>
-              <Button size="sm" variant="secondary" onClick={() => createNote.mutate()}>
-                <Plus size={14} /> New note
-              </Button>
-            </div>
-          ) : (
-            notes.map((note) => (
-              <NoteListItem
-                key={note.id}
-                note={note}
-                selected={note.id === selectedNoteId}
-                onSelect={() => setSelectedNoteId(note.id)}
-                onDelete={() => setDeleteNoteId(note.id)}
-              />
-            ))
-          )}
         </div>
       </aside>
 
@@ -464,12 +438,7 @@ export default function Notes() {
       </div>
 
       {/* Modals */}
-      <Modal
-        open={newNotebookOpen}
-        onClose={() => setNewNotebookOpen(false)}
-        title="New Notebook"
-        size="sm"
-      >
+      <Modal open={newNotebookOpen} onClose={() => setNewNotebookOpen(false)} title="New Notebook" size="sm">
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -485,29 +454,18 @@ export default function Notes() {
             placeholder="e.g. Work, Personal"
           />
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setNewNotebookOpen(false)}>
-              Cancel
-            </Button>
-            <Button size="sm" loading={createNotebook.isPending} disabled={!newNotebookName.trim()}>
-              Create
-            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setNewNotebookOpen(false)}>Cancel</Button>
+            <Button size="sm" loading={createNotebook.isPending} disabled={!newNotebookName.trim()}>Create</Button>
           </div>
         </form>
       </Modal>
 
-      <Modal
-        open={!!deleteNotebookId}
-        onClose={() => setDeleteNotebookId(null)}
-        title="Delete Notebook"
-        size="sm"
-      >
+      <Modal open={!!deleteNotebookId} onClose={() => setDeleteNotebookId(null)} title="Delete Notebook" size="sm">
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           This will permanently delete the notebook and all its notes.
         </p>
         <div className="flex justify-end gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setDeleteNotebookId(null)}>
-            Cancel
-          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setDeleteNotebookId(null)}>Cancel</Button>
           <Button
             variant="danger"
             size="sm"
@@ -519,19 +477,12 @@ export default function Notes() {
         </div>
       </Modal>
 
-      <Modal
-        open={!!deleteNoteId}
-        onClose={() => setDeleteNoteId(null)}
-        title="Delete Note"
-        size="sm"
-      >
+      <Modal open={!!deleteNoteId} onClose={() => setDeleteNoteId(null)} title="Delete Note" size="sm">
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           This note will be permanently deleted.
         </p>
         <div className="flex justify-end gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setDeleteNoteId(null)}>
-            Cancel
-          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setDeleteNoteId(null)}>Cancel</Button>
           <Button
             variant="danger"
             size="sm"
@@ -545,3 +496,4 @@ export default function Notes() {
     </div>
   )
 }
+
