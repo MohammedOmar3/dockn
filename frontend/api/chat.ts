@@ -1,5 +1,6 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { streamText, convertToModelMessages, validateUIMessages } from 'ai';
+import { streamText, convertToModelMessages } from 'ai';
+import type { UIMessage } from 'ai';
 
 export const config = { runtime: 'edge' };
 
@@ -16,14 +17,13 @@ export default async function handler(req: Request): Promise<Response> {
 
   try {
     const body = await req.json() as {
-      messages: unknown[];
+      messages: UIMessage[];
       model?: string;
-      webSearch?: boolean;
     };
 
-    const { messages: rawMessages, model = 'openai/gpt-4o-mini' } = body;
+    const { messages, model = 'openai/gpt-4o-mini' } = body;
 
-    if (!Array.isArray(rawMessages) || rawMessages.length === 0) {
+    if (!Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: 'messages is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
@@ -37,16 +37,12 @@ export default async function handler(req: Request): Promise<Response> {
       });
     }
 
-    // assistant-ui sends UIMessage format — convert to model messages
-    const validation = validateUIMessages(rawMessages);
-    const messages = convertToModelMessages(validation.success ? validation.value : rawMessages as never);
-
     const result = streamText({
       model: openrouter(model),
-      messages,
+      messages: convertToModelMessages(messages),
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return new Response(
