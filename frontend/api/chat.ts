@@ -1,6 +1,6 @@
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText } from 'ai';
+import { streamText, convertToModelMessages, validateUIMessages } from 'ai';
 
 export const config = { runtime: 'edge' };
 
@@ -11,18 +11,23 @@ export default async function handler(req: Request): Promise<Response> {
 
   try {
     const body = await req.json() as {
-      messages: Array<{ role: string; content: string }>;
+      messages: unknown[];
       model?: string;
+      webSearch?: boolean;
     };
 
-    const { messages, model = 'gpt-4o-mini' } = body;
+    const { messages: rawMessages, model = 'gpt-4o-mini' } = body;
 
-    if (!Array.isArray(messages) || messages.length === 0) {
+    if (!Array.isArray(rawMessages) || rawMessages.length === 0) {
       return new Response(JSON.stringify({ error: 'messages is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    // assistant-ui sends UIMessage format — convert to model messages
+    const validation = validateUIMessages(rawMessages);
+    const messages = convertToModelMessages(validation.success ? validation.value : rawMessages as never);
 
     const isAnthropic = String(model).startsWith('claude');
 
@@ -32,9 +37,10 @@ export default async function handler(req: Request): Promise<Response> {
     });
 
     return result.toDataStreamResponse();
-  } catch {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     return new Response(
-      JSON.stringify({ error: 'Failed to process chat request' }),
+      JSON.stringify({ error: message }),
       { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }
