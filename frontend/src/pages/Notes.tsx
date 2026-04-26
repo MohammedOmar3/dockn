@@ -146,7 +146,7 @@ function NotebookSection({
                   <MoreHorizontal size={12} />
                 </button>
                 {menuOpen && (
-                  <div className="absolute left-0 top-full mt-1 w-36 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
+                  <div className="absolute left-0 top-full mt-1 w-36 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
                     <button
                       onClick={(e) => { e.stopPropagation(); setRenaming(true); setMenuOpen(false) }}
                       className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -374,7 +374,7 @@ export default function Notes() {
   return (
     <div className="flex h-full">
       {/* Tree sidebar */}
-      <aside className="w-56 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
+      <aside className="w-56 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200 dark:border-gray-800">
           <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Notes</span>
           <button
