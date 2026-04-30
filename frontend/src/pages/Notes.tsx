@@ -22,6 +22,16 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import type { Notebook, Note } from '@/types'
 
+function upsertNote(notes: Note[], note: Note) {
+  const existingIndex = notes.findIndex((entry) => entry.id === note.id)
+
+  if (existingIndex === -1) {
+    return [...notes, note]
+  }
+
+  return notes.map((entry) => (entry.id === note.id ? note : entry))
+}
+
 // ─── Note tree item ───────────────────────────────────────────────────────────
 
 function NoteTreeItem({
@@ -340,6 +350,7 @@ export default function Notes() {
     mutationFn: (notebookId: string) =>
       notesApi.create({ title: 'Untitled', notebook_id: notebookId, content: {} }),
     onSuccess: (note, notebookId) => {
+      qc.setQueryData<Note[]>(['notes', notebookId], (current = []) => upsertNote(current, note))
       qc.invalidateQueries({ queryKey: ['notes', notebookId] })
       setSelectedNotebookId(notebookId)
       setSelectedNoteId(note.id)
@@ -394,8 +405,8 @@ export default function Notes() {
               onToggle={() => toggleNotebook(nb.id)}
               selectedNoteId={selectedNoteId}
               onSelectNote={(note, notebookId) => {
-                setSelectedNoteId(note.id)
                 setSelectedNotebookId(notebookId)
+                setSelectedNoteId(note.id)
               }}
               onDeleteNote={(noteId) => setDeleteNoteId(noteId)}
               onAddNote={(notebookId) => createNote.mutate(notebookId)}
