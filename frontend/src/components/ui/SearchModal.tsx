@@ -17,7 +17,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function SearchModal() {
-  const { searchOpen, setSearchOpen } = useUIStore()
+  const { searchOpen, setSearchOpen, selectNote } = useUIStore()
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
   const debouncedQuery = useDebounce(query, 300)
@@ -111,6 +111,7 @@ export function SearchModal() {
                   <button
                     key={note.id}
                     onClick={() => {
+                      selectNote(note.notebook_id, note.id)
                       navigate('/notes')
                       setSearchOpen(false)
                     }}

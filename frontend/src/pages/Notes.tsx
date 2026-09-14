@@ -235,7 +235,7 @@ function EditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
 // ─── Main Notes page ──────────────────────────────────────────────────────────
 
 export default function Notes() {
-  const { selectedNotebookId, setSelectedNotebook: setSelectedNotebookId, selectedNoteId, setSelectedNote: setSelectedNoteId } = useUIStore()
+  const { selectedNotebookId, setSelectedNotebook: setSelectedNotebookId, selectedNoteId, setSelectedNote: setSelectedNoteId, selectNote } = useUIStore()
   const { success, error } = useToast()
   const qc = useQueryClient()
 
@@ -350,8 +350,7 @@ export default function Notes() {
     onSuccess: (note, notebookId) => {
       qc.setQueryData<Note[]>(['notes', notebookId], (current = []) => upsertNote(current, note))
       qc.invalidateQueries({ queryKey: ['notes', notebookId] })
-      setSelectedNotebookId(notebookId)
-      setSelectedNoteId(note.id)
+      selectNote(notebookId, note.id)
       success('Note created')
     },
     onError: () => error('Failed to create note'),
@@ -415,8 +414,7 @@ export default function Notes() {
               onToggle={() => toggleNotebook(nb.id)}
               selectedNoteId={selectedNoteId}
               onSelectNote={(note, notebookId) => {
-                setSelectedNotebookId(notebookId)
-                setSelectedNoteId(note.id)
+                selectNote(notebookId, note.id)
               }}
               onDeleteNote={(noteId) => setDeleteNoteId(noteId)}
               onAddNote={(notebookId) => createNote.mutate(notebookId)}
