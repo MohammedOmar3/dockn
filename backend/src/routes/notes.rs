@@ -129,7 +129,7 @@ async fn create_note(
         auth.user_id,
         body.notebook_id,
         body.title.unwrap_or_else(|| "Untitled".to_string()),
-        body.content.unwrap_or(serde_json::json!({})),
+        body.content.unwrap_or_else(crate::models::note::empty_note_content),
         max_order + 1
     )
     .fetch_one(&state.pool)
