@@ -19,6 +19,7 @@ interface UIState {
   // Actions
   setSelectedNotebook: (id: string | null) => void
   setSelectedNote: (id: string | null) => void
+  selectNote: (notebookId: string, noteId: string | null) => void
   setSidebarOpen: (open: boolean) => void
   toggleTheme: () => void
   setSearchOpen: (open: boolean) => void
@@ -38,6 +39,8 @@ export const useUIStore = create<UIState>()(
       setSelectedNotebook: (id: string | null) =>
         set({ selectedNotebookId: id, selectedNoteId: null }),
       setSelectedNote: (id: string | null) => set({ selectedNoteId: id }),
+      selectNote: (notebookId: string, noteId: string | null) =>
+        set({ selectedNotebookId: notebookId, selectedNoteId: noteId }),
       setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
       toggleTheme: () =>
         set((s: UIState) => {
