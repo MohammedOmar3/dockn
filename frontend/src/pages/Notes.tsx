@@ -16,6 +16,7 @@ import {
 import clsx from 'clsx'
 import { notebooksApi, notesApi } from '@/api/client'
 import { EMPTY_NOTE_CONTENT } from '@/lib/tiptapContent'
+import { useDebouncedNoteSave } from '@/pages/notes/useDebouncedNoteSave'
 import { useUIStore } from '@/store/uiStore'
 import { useToast } from '@/components/ui/Toast'
 import { Button } from '@/components/ui/Button'
@@ -244,7 +245,6 @@ export default function Notes() {
   const [deleteNotebookId, setDeleteNotebookId] = useState<string | null>(null)
   const [deleteNoteId, setDeleteNoteId] = useState<string | null>(null)
   const [noteTitleEdit, setNoteTitleEdit] = useState('')
-  const saveTimer = useRef<ReturnType<typeof setTimeout>>()
 
   // ── Notebooks query ──
   const { data: notebooks = [] } = useQuery<Notebook[]>({
@@ -292,10 +292,7 @@ export default function Notes() {
     },
     onUpdate: ({ editor }) => {
       if (!selectedNoteId) return
-      clearTimeout(saveTimer.current)
-      saveTimer.current = setTimeout(() => {
-        updateNote.mutate({ content: editor.getJSON() })
-      }, 1500)
+      scheduleSave(selectedNoteId, editor.getJSON())
     },
   })
 
@@ -361,10 +358,22 @@ export default function Notes() {
   })
 
   const updateNote = useMutation({
-    mutationFn: (data: { title?: string; content?: Record<string, unknown> }) =>
-      notesApi.update(selectedNoteId!, data),
+    mutationFn: ({ noteId, ...data }: { noteId: string; title?: string; content?: Record<string, unknown> }) =>
+      notesApi.update(noteId, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notes', selectedNotebookId] }),
   })
+
+  const { schedule: scheduleSave, flush: flushSave } = useDebouncedNoteSave((noteId, content) => {
+    updateNote.mutate({ noteId, content })
+  })
+
+  // Flush any pending autosave for the note being left, so a switch away
+  // never silently drops the last edit (see useDebouncedNoteSave.ts).
+  useEffect(() => {
+    return () => {
+      flushSave()
+    }
+  }, [selectedNoteId, flushSave])
 
   const deleteNote = useMutation({
     mutationFn: (id: string) => notesApi.delete(id),
@@ -379,9 +388,9 @@ export default function Notes() {
 
   const handleTitleBlur = useCallback(() => {
     if (selectedNoteId && noteTitleEdit.trim() && noteTitleEdit !== selectedNote?.title) {
-      updateNote.mutate({ title: noteTitleEdit.trim() })
+      updateNote.mutate({ noteId: selectedNoteId, title: noteTitleEdit.trim() })
     }
-  }, [selectedNoteId, noteTitleEdit, selectedNote?.title])
+  }, [selectedNoteId, noteTitleEdit, selectedNote?.title, updateNote])
 
   return (
     <div className="flex h-full">
