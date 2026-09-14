@@ -81,4 +81,29 @@ describe('useDebouncedNoteSave', () => {
     expect(save).toHaveBeenCalledTimes(1)
     expect(save).toHaveBeenCalledWith('note-a', { text: 'second draft' })
   })
+
+  it('keeps schedule/flush referentially stable across re-renders even when save changes identity, and always calls the latest save', () => {
+    const save1 = vi.fn()
+    const save2 = vi.fn()
+    const { result, rerender } = renderHook(
+      ({ save }) => useDebouncedNoteSave(save, 1500),
+      { initialProps: { save: save1 } },
+    )
+
+    const firstSchedule = result.current.schedule
+    const firstFlush = result.current.flush
+
+    rerender({ save: save2 })
+
+    expect(result.current.schedule).toBe(firstSchedule)
+    expect(result.current.flush).toBe(firstFlush)
+
+    act(() => {
+      result.current.schedule('note-a', { text: 'hello' })
+      vi.advanceTimersByTime(1500)
+    })
+
+    expect(save1).not.toHaveBeenCalled()
+    expect(save2).toHaveBeenCalledWith('note-a', { text: 'hello' })
+  })
 })

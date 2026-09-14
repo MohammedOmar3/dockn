@@ -19,15 +19,17 @@ export function useDebouncedNoteSave(
 ) {
   const timerRef = useRef<ReturnType<typeof setTimeout>>()
   const pendingRef = useRef<PendingSave | null>(null)
+  const saveRef = useRef(save)
+  saveRef.current = save
 
   const flush = useCallback(() => {
     clearTimeout(timerRef.current)
     const pending = pendingRef.current
     if (pending) {
       pendingRef.current = null
-      save(pending.noteId, pending.content)
+      saveRef.current(pending.noteId, pending.content)
     }
-  }, [save])
+  }, [])
 
   const schedule = useCallback(
     (noteId: string, content: Record<string, unknown>) => {

@@ -91,12 +91,13 @@ async fn capture(
         Note,
         r#"
         INSERT INTO notes (user_id, notebook_id, title, content)
-        VALUES ($1, $2, $3, '{}')
+        VALUES ($1, $2, $3, $4)
         RETURNING *
         "#,
         auth.user_id,
         inbox_id,
-        if note_title.is_empty() { "New Note" } else { note_title }
+        if note_title.is_empty() { "New Note" } else { note_title },
+        crate::models::note::empty_note_content()
     )
     .fetch_one(&state.pool)
     .await?;

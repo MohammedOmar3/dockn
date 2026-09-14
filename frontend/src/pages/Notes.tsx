@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import clsx from 'clsx'
 import { notebooksApi, notesApi } from '@/api/client'
-import { EMPTY_NOTE_CONTENT } from '@/lib/tiptapContent'
+import { EMPTY_NOTE_CONTENT, toEditorContent } from '@/lib/tiptapContent'
 import { useDebouncedNoteSave } from '@/pages/notes/useDebouncedNoteSave'
 import { useUIStore } from '@/store/uiStore'
 import { useToast } from '@/components/ui/Toast'
@@ -273,7 +273,7 @@ export default function Notes() {
 
   // Auto-select first note when notebook changes
   useEffect(() => {
-    if (notes.length > 0 && !notes.find((n) => n.id === selectedNoteId)) {
+    if (notes.length > 0 && selectedNoteId === null) {
       setSelectedNoteId(notes[0].id)
     }
   }, [notes, selectedNoteId, setSelectedNoteId])
@@ -286,7 +286,7 @@ export default function Notes() {
       StarterKit,
       Placeholder.configure({ placeholder: 'Start writing…' }),
     ],
-    content: selectedNote?.content ?? '',
+    content: toEditorContent(selectedNote?.content),
     editorProps: {
       attributes: { class: 'prose dark:prose-invert max-w-none focus:outline-none p-6' },
     },
@@ -299,7 +299,7 @@ export default function Notes() {
   // Sync editor when note changes
   useEffect(() => {
     if (editor && selectedNote) {
-      editor.commands.setContent(selectedNote.content ?? '')
+      editor.commands.setContent(toEditorContent(selectedNote.content))
       setNoteTitleEdit(selectedNote.title)
     }
   }, [selectedNote?.id])
@@ -359,7 +359,10 @@ export default function Notes() {
   const updateNote = useMutation({
     mutationFn: ({ noteId, ...data }: { noteId: string; title?: string; content?: Record<string, unknown> }) =>
       notesApi.update(noteId, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notes', selectedNotebookId] }),
+    onSuccess: (updated) => {
+      qc.setQueryData<Note[]>(['notes', updated.notebook_id], (current = []) => upsertNote(current, updated))
+    },
+    onError: () => error('Failed to save note'),
   })
 
   const { schedule: scheduleSave, flush: flushSave } = useDebouncedNoteSave((noteId, content) => {
