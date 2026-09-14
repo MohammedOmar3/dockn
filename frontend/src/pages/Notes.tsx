@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import clsx from 'clsx'
 import { notebooksApi, notesApi } from '@/api/client'
+import { EMPTY_NOTE_CONTENT } from '@/lib/tiptapContent'
 import { useUIStore } from '@/store/uiStore'
 import { useToast } from '@/components/ui/Toast'
 import { Button } from '@/components/ui/Button'
@@ -348,7 +349,7 @@ export default function Notes() {
 
   const createNote = useMutation({
     mutationFn: (notebookId: string) =>
-      notesApi.create({ title: 'Untitled', notebook_id: notebookId, content: {} }),
+      notesApi.create({ title: 'Untitled', notebook_id: notebookId, content: EMPTY_NOTE_CONTENT }),
     onSuccess: (note, notebookId) => {
       qc.setQueryData<Note[]>(['notes', notebookId], (current = []) => upsertNote(current, note))
       qc.invalidateQueries({ queryKey: ['notes', notebookId] })
