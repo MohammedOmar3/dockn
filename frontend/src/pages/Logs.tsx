@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -10,6 +10,8 @@ import { useToast } from '@/components/ui/Toast'
 import { Button } from '@/components/ui/Button'
 import type { DailyLog } from '@/types'
 import { addDays, todayString } from '@/lib/dates'
+import { toEditorContent } from '@/lib/tiptapContent'
+import { useDebouncedNoteSave } from '@/pages/notes/useDebouncedNoteSave'
 
 function formatDisplayDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00')
@@ -49,7 +51,6 @@ export default function Logs() {
   const [selectedDate, setSelectedDate] = useState(today)
   const { error } = useToast()
   const qc = useQueryClient()
-  const saveTimer = useRef<ReturnType<typeof setTimeout>>()
   const [moodScore, setMoodScore] = useState<number | undefined>()
 
   const { data: log } = useQuery<DailyLog | null>({
@@ -64,6 +65,37 @@ export default function Logs() {
     },
   })
 
+  const upsertLog = useMutation({
+    mutationFn: async ({
+      date,
+      ...data
+    }: {
+      date: string
+      content?: unknown
+      mood_score?: number
+    }) => {
+      const existing = qc.getQueryData<DailyLog | null>(['log', date])
+      if (existing) {
+        return logsApi.update(existing.id, data)
+      }
+      return logsApi.create({ log_date: date, ...data })
+    },
+    onSuccess: (saved) => {
+      qc.setQueryData(['log', saved.log_date], saved)
+    },
+    onError: () => error('Failed to save log'),
+  })
+
+  const { schedule: scheduleSave, flush: flushSave } = useDebouncedNoteSave((date, content) => {
+    upsertLog.mutate({ date, content })
+  })
+
+  useEffect(() => {
+    return () => {
+      flushSave()
+    }
+  }, [selectedDate, flushSave])
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -74,36 +106,18 @@ export default function Logs() {
       attributes: { class: 'prose dark:prose-invert max-w-none focus:outline-none' },
     },
     onUpdate: ({ editor }) => {
-      clearTimeout(saveTimer.current)
-      saveTimer.current = setTimeout(() => {
-        upsertLog.mutate({ content: editor.getJSON() })
-      }, 1500)
+      scheduleSave(selectedDate, editor.getJSON())
     },
   })
 
   // Sync editor when log changes
+  const logLoaded = log !== undefined
   useEffect(() => {
-    if (editor && log !== undefined) {
-      editor.commands.setContent(log?.content ?? '')
+    if (editor && logLoaded) {
+      editor.commands.setContent(toEditorContent(log?.content))
       setMoodScore(log?.mood_score ?? undefined)
     }
-  }, [selectedDate, log?.id])
-
-  const upsertLog = useMutation({
-    mutationFn: async (data: { content?: unknown; mood_score?: number }) => {
-      if (log) {
-        return logsApi.update(log.id, data)
-      } else {
-        return logsApi.create({
-          log_date: selectedDate,
-          content: editor?.getJSON(),
-          ...data,
-        })
-      }
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['log', selectedDate] }),
-    onError: () => error('Failed to save log'),
-  })
+  }, [selectedDate, logLoaded, log?.id])
 
   const navigateDay = (delta: number) => {
     setSelectedDate(addDays(selectedDate, delta))
@@ -146,7 +160,7 @@ export default function Logs() {
                 key={n}
                 onClick={() => {
                   setMoodScore(n)
-                  upsertLog.mutate({ mood_score: n })
+                  upsertLog.mutate({ date: selectedDate, mood_score: n })
                 }}
                 className={clsx(
                   'text-lg transition-transform hover:scale-110',
