@@ -66,6 +66,7 @@ export default function Logs() {
   })
 
   const upsertLog = useMutation({
+    scope: { id: 'log-upsert' },
     mutationFn: async ({
       date,
       ...data
@@ -96,22 +97,24 @@ export default function Logs() {
     }
   }, [selectedDate, flushSave])
 
+  const logLoaded = log !== undefined
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({ placeholder: "How did your day go? Capture thoughts, wins, blockers…" }),
     ],
-    content: log?.content ?? '',
+    content: toEditorContent(log?.content),
     editorProps: {
       attributes: { class: 'prose dark:prose-invert max-w-none focus:outline-none' },
     },
     onUpdate: ({ editor }) => {
+      if (!logLoaded) return
       scheduleSave(selectedDate, editor.getJSON())
     },
   })
 
-  // Sync editor when log changes
-  const logLoaded = log !== undefined
+  // Sync editor when log changes. Relies on setContent not emitting onUpdate (TipTap 2.x default); re-check on a major upgrade.
   // log?.id is intentionally not a dependency: a first save on the same day must not reset the editor
   useEffect(() => {
     if (editor && logLoaded) {

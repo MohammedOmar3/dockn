@@ -19,6 +19,7 @@ export default defineConfig({
     },
   },
   test: {
+    env: { TZ: 'Asia/Dubai' },
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
