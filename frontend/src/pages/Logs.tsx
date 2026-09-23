@@ -112,12 +112,13 @@ export default function Logs() {
 
   // Sync editor when log changes
   const logLoaded = log !== undefined
+  // log?.id is intentionally not a dependency: a first save on the same day must not reset the editor
   useEffect(() => {
     if (editor && logLoaded) {
       editor.commands.setContent(toEditorContent(log?.content))
       setMoodScore(log?.mood_score ?? undefined)
     }
-  }, [selectedDate, logLoaded, log?.id])
+  }, [selectedDate, logLoaded])
 
   const navigateDay = (delta: number) => {
     setSelectedDate(addDays(selectedDate, delta))
