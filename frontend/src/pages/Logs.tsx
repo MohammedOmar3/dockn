@@ -9,10 +9,7 @@ import { logsApi } from '@/api/client'
 import { useToast } from '@/components/ui/Toast'
 import { Button } from '@/components/ui/Button'
 import type { DailyLog } from '@/types'
-
-function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0]
-}
+import { addDays, todayString } from '@/lib/dates'
 
 function formatDisplayDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00')
@@ -48,7 +45,7 @@ function EditorToolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
 }
 
 export default function Logs() {
-  const today = formatDate(new Date())
+  const today = todayString()
   const [selectedDate, setSelectedDate] = useState(today)
   const { error } = useToast()
   const qc = useQueryClient()
@@ -109,9 +106,7 @@ export default function Logs() {
   })
 
   const navigateDay = (delta: number) => {
-    const d = new Date(selectedDate + 'T00:00:00')
-    d.setDate(d.getDate() + delta)
-    setSelectedDate(formatDate(d))
+    setSelectedDate(addDays(selectedDate, delta))
   }
 
   const isToday = selectedDate === today
